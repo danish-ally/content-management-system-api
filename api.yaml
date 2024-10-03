@@ -1,0 +1,1679 @@
+swagger: "2.0"
+info:
+  title: Swagger documentation for ML-APP-API
+  version: 1.0
+  contact:
+    email: danish.ali@lawsikho.in
+  liscence:
+    name: Apache 2.0
+    url: "http://www.apache.org/liscences/LIS"
+  servers:
+    -url: http://localhost:5000
+    description: THis is my local Server
+    -url: http://example.com/
+    description: This is my original URL
+schemes: [https, http]
+
+tags:
+  - name: Course
+    description: Everything about Course
+  - name: Course Category
+    description: Everything about Course Category
+  - name: Module
+    description: Everything about Module
+  - name: Lesson
+    description: Everything about lesson
+  - name: Chapter
+    description: Everything about chapter
+  - name: Topic
+    description: Everything about topic
+  - name: Question
+    description: Everything about question
+paths:
+# create course
+  /api/v1/course:
+   post:
+    tags:
+      - Course
+    summary: Create a new course
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: course
+        description: The course to create
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            code:
+              type: string
+            refCode:
+              type: string
+            appId:
+              type: string
+            courseCategoryIds:
+              type: array
+              items:
+                    type: string
+            isPaid:
+              type: boolean
+            level:
+              type: string
+            plans:
+              type: object
+              properties:
+                monthly:
+                  type: number
+                quarterly:
+                  type: number
+                yearly:
+                  type: number
+              required:
+                - monthly
+                - quarterly
+                - yearly
+            description:
+              type: object
+              properties:
+                intro:
+                  type: string
+                details:
+                  type: string
+              required:
+                - intro
+                - details
+            readingHours:
+              type: string
+            pictures:
+              type: object
+              properties:
+                banners:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      imageName:
+                        type: string
+                      heading:
+                        type: string
+                      path:
+                        type: string
+                    required:
+                      - imageName
+                      - heading
+                      - path
+                profile:
+                  type: object
+                  properties:
+                    imageName:
+                      type: string
+                    icon:
+                      type: string
+                  required:
+                    - imageName
+                    - icon
+            status:
+              type: string
+          required:
+            - name
+            - url
+            - code
+            - refCode
+            - appId
+            - courseCategoryIds
+            - isPaid
+            - level
+            - plans
+            - description
+            - readingHours
+            - pictures
+            - status
+    responses:
+      201:
+        description: "Course created successfully"
+      400:
+        description: Code or urlMask already used
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      500:
+        description: Internal server error
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Internal Server Error
+# Get All Course
+   get:
+      tags:
+       - Course
+      summary: Get All Course
+      parameters:
+      - in: query
+        name: page
+        description: Page number of the results to retrieve
+        schema:
+          type: integer
+      - in: query
+        name: limit
+        description: Maximum number of results to retrieve per page
+        schema:
+          type: integer
+      - in: query
+        name: status
+        description: "'Active', 'Deleted', 'Inactive'"
+        schema:
+          type: string
+      - in: query
+        name: search
+        description: "Search with name and description of the course"
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get All Course
+        "500":
+          description: Internal server error  
+
+# Get All Course
+  /api/v1/course/filter/:
+   get:
+      tags:
+       - Course
+      summary: Get All Course For Filter
+      parameters:
+      - in: query
+        name: search
+        description: "Search with name of the course"
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get All Course For Filter
+        "500":
+          description: Internal server error  
+# Edit course
+  /api/v1/course/{courseId}:
+    put:
+      tags:
+       - Course
+      summary: Update a course by ID
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to update
+        - in: body
+          name: course
+          required: true
+          schema:
+            type: object
+      responses:
+        "200":
+          description: Course updated successfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+    # Delete Course
+    delete:
+      tags:
+       - Course
+      summary: Delete Course and all related lesson
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course
+      responses:
+        "200":
+          description: Course and related lessons marked as deleted
+        '404':
+          description: Course Not Found
+        '500':
+          description: Internal server error
+# Update course status
+  /api/v1/course/{courseId}/status:
+    patch:
+      tags:
+       - Course
+      summary: Update a course status by ID
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to update
+        - in: body
+          name: course
+          description: The course to update status ['Active', 'Inactive', 'Retired', 'Archive']
+          required: true
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                required: true
+      responses:
+        "200":
+          description: Course updated successfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+# Get Course Details By CourseId
+  /api/v1/course/{courseId}/details:
+    get:
+      tags:
+       - Course
+      summary: Get Course Details By Course Id
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to get details
+      responses:
+        "200":
+          description: Got Course Details Succesfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+# Get Course Details With Structure By CourseId (For User POV)
+  /api/v1/course/{courseId}/details/user:
+    get:
+      tags:
+       - Course
+      summary: Get Course Details With Structure By CourseId (For User POV)
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to get details
+      responses:
+        "200":
+          description: Course details obtained successfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+# Get Course With categories(For User POV)
+  /api/v1/course/active:
+    get:
+      tags:
+       - Course
+      summary: Get Course With categories(For User POV)
+      responses:
+        "200":
+          description: Got course with categories successfully
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+# Add Course Category
+  /api/v1/course-categories:
+    post:
+      tags:
+       - Course Category
+      summary: Add Course Category
+      consumes:
+        - multipart/form-data
+      parameters:
+         - in: formData
+           name: name
+           type: string
+           required: true
+         - in: formData
+           name: urlMask
+           type: string
+           required: true
+         - in: formData
+           name: logo
+           type: file
+           required: true
+         - in: formData
+           name: readingHours
+           type: string
+         - in: formData
+           name: description
+           type: string
+           required: true
+         - in: formData
+           name: publish
+           type: boolean
+
+      responses:
+        "200":
+          description: Add Course Category successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+    get:
+      tags:
+       - Course Category
+      summary: Get All Course Category
+      parameters:
+      - in: query
+        name: page
+        description: Page number of the results to retrieve
+        schema:
+          type: integer
+      - in: query
+        name: limit
+        description: Maximum number of results to retrieve per page
+        schema:
+          type: integer
+      - in: query
+        name: status
+        description: "'Active', 'Deleted', 'Inactive'"
+        schema:
+          type: string
+      - in: query
+        name: search
+        description: "Search with name of the course category"
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get All Course Category
+        "500":
+          description: Internal server error 
+# Edit course category
+  /api/v1/course-categories/{courseCategoryId}:
+   patch:
+      tags:
+       - Course Category
+      summary: Update a course category by Id
+      parameters:
+        - in: path
+          name: courseCategoryId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course category to update
+        - in: formData
+          name: name
+          type: string
+        - in: formData
+          name: urlMask
+          type: string
+        - in: formData
+          name: logo
+          type: file
+        - in: formData
+          name: readingHours
+          type: string
+        - in: formData
+          name: description
+          type: string
+        - in: formData
+          name: publish
+          type: boolean
+      responses:
+        "200":
+          description: Course Category updated successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+# Delete course category
+  /api/v1/course-categories/{courseCategoryId}/delete:
+   delete:
+      tags:
+       - Course Category
+      summary: Delete a course category by Id
+      parameters:
+        - in: path
+          name: courseCategoryId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course category to update
+      responses:
+        "200":
+          description: Course Category deleted successfully
+        "404":
+          description: Course category not found
+        "500":
+          description: Internal server error  
+# Add Module
+  /api/v1/course/{courseId}/modules:
+    post:
+      tags:
+        - Module
+      summary: Add Module
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to update
+        - in: formData
+          name: logo
+          type: file
+          required: true
+          description: The logo image for the module.
+        - in: formData
+          name: name
+          type: string
+          required: true
+          description: The name of the module.
+        - in: formData
+          name: url
+          type: string
+          required: true
+          description: The URL of the module.
+        - in: formData
+          name: details
+          type: string
+          required: true
+          description: The details of the module.
+        - in: formData
+          name: readingHours
+          type: string
+      responses:
+        "200":
+          description: Add Module successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+# Get All Modules By CouseId 
+  /api/v1/course/{courseId}/modules/all/:
+   get:
+      tags:
+       - Module
+      summary: Get All Modules By CourseId
+      parameters:
+      - in: path
+        name: courseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the course to get modules
+      - in: query
+        name: search
+        description: "Search with name of the Module"
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Get All Modules By CourseId
+        "500":
+          description: Internal server error  
+# Edit Module
+  /api/v1/course/{courseId}/module/{moduleId}:
+    put:
+      tags:
+       - Module
+      summary: Edit Module
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course to update
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the module to update
+        - in: formData
+          name: logo
+          type: file
+          description: The logo image for the module.
+        - in: formData
+          name: name
+          type: string
+          description: The name of the module.
+        - in: formData
+          name: url
+          type: string
+          description: The URL of the module.
+        - in: formData
+          name: details
+          type: string
+          description: The details of the module.
+        - in: formData
+          name: readingHours
+          type: string
+      responses:
+        "200":
+          description: Updated Module successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+# Delete Module
+    delete:
+      tags:
+       - Module
+      summary: Delete Module
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the module to delete
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+# Update module status
+  /api/v1/course/{courseId}/module/{moduleId}/status:
+    patch:
+      tags:
+       - Module
+      summary: Update a module status by courseId, moduleId
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the module
+        - in: body
+          name: course
+          description: The module to update status ['Active', 'Inactive', 'Retired', 'Archive']
+          required: true
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                required: true
+      responses:
+        "200":
+          description: Module updated successfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+# Add Lesson
+  /api/v1/lesson/course/{courseId}:
+    post:
+      tags:
+       - Lesson
+      summary: Add Lesson
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to which the lesson belongs
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: Name of the lesson
+          required: true
+          type: string
+        - name: url
+          in: formData
+          description: URL of the lesson
+          required: true
+          type: string
+        - name: moduleId
+          in: formData
+          description: ID of the module to which the lesson belongs
+          required: true
+          type: string
+        - name: chapterId
+          in: formData
+          description: ID of the chapter to which the lesson belongs
+          required: true
+          type: string
+
+        - name: details
+          in: formData
+          description: Details of the lesson
+          required: true
+          type: string
+        - in: formData
+          name: contents
+          type: array
+          required: true
+          description: The list of contents for the module.
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                required: true
+              order:
+                type: number
+                required: true
+          collectionFormat: multi
+        - name: files
+          in: formData
+          description: add files in order
+          required: true
+          type: array
+          items:
+            type: file
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Lesson added successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Lesson added successfully
+              lesson:
+                $ref: '#/definitions/Lesson'
+        '400':
+          description: Invalid request
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid request
+        '500':
+          description: Internal server error
+# Update Lesson
+  /api/v1/lesson/{lessonId}/course/{courseId}:
+    put:
+      tags:
+       - Lesson
+      summary: Update Lesson
+      parameters:
+        - name: courseId
+          in: path
+          description: ID of the course to which the lesson belongs
+          required: true
+          type: string
+        - name: lessonId
+          in: path
+          description: ID of the lesson 
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: Name of the lesson
+          type: string
+        - name: url
+          in: formData
+          description: URL of the lesson
+          type: string
+        - name: moduleId
+          in: formData
+          description: ID of the module to which the lesson belongs
+          required: true
+          type: string
+        - name: chapterId
+          in: formData
+          description: ID of the chapter to which the lesson belongs
+          required: true
+          type: string
+        - name: details
+          in: formData
+          description: Details of the lesson
+          required: true
+          type: string
+        - in: formData
+          name: contents
+          type: array
+          description: The list of contents for the module.
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                required: true
+              order:
+                type: number
+                required: true
+          collectionFormat: multi
+        - name: files
+          in: formData
+          description: add files in order
+          type: array
+          items:
+            type: file
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Updated Lesson successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error 
+# Remove Lesson
+  /api/v1/lesson/{lessonId}/remove:
+    delete:
+      tags:
+       - Lesson
+      summary: Remove Lesson
+      parameters:
+        - in: path
+          name: lessonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the lesson       
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Lesson Not Found
+        '500':
+          description: Internal server error 
+# Delete Content
+  /api/v1/lesson/{lessonId}/content/{contentId}/delete:
+    delete:
+      tags:
+       - Lesson
+      summary: Delete content
+      parameters:
+        - in: path
+          name: lessonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the lesson  
+        - in: path
+          name: contentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the content      
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Bad request
+        '500':
+          description: Internal server error         
+# Edit Content
+  /api/v1/lesson/{lessonId}/content/{contentId}/edit:
+    put:
+      tags:
+       - Lesson
+      summary: Edit content
+      parameters:
+        - in: path
+          name: lessonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the lesson  
+        - in: path
+          name: contentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the content   
+        - name: title
+          in: formData
+          type: string   
+      responses:
+        "200":
+          description: Updated successfully
+        '404':
+          description: Bad request
+        '500':
+          description: Internal server error  
+# Add Content
+  /api/v1/lesson/{lessonId}/content/add:
+    post:
+      tags:
+       - Lesson
+      summary: Add content
+      parameters:
+        - in: path
+          name: lessonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the lesson    
+        - name: title
+          required: true
+          in: formData
+          type: string   
+        - name: urlOrText
+          in: formData
+          type: string   
+        - name: type
+          in: formData
+          required: true
+          type: string
+        - name: files
+          in: formData
+          description: add files in order
+          type: array
+          items:
+            type: file  
+      responses:
+        "200":
+          description: Content added successfully
+        '404':
+          description: Bad request
+        '500':
+          description: Internal server error  
+# change Content Order By LessonId
+  /api/v1/lesson/{lessonId}/content/changeOrder:
+    put:
+      tags:
+       - Lesson
+      summary: change Content Order By LessonId
+      parameters:
+        - in: path
+          name: lessonId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the lesson    
+        - name: title
+          required: true
+          in: formData
+          type: string   
+        - name: urlOrText
+          in: formData
+          type: string   
+        - name: type
+          in: formData
+          required: true
+          type: string
+        - name: contents
+          in: formData
+          description: add content in array
+          type: array
+          items:
+            type: object  
+      responses:
+        "200":
+          description: Order updated successfully
+        '404':
+          description: Bad request
+        '500':
+          description: Internal server error  
+# Get a list of lessons based on course, module, and chapter filters
+  /api/v1/lesson:
+    get:
+      tags:
+        - Lesson
+      summary: Get a list of lessons based on course, module, and chapter filters
+      parameters:
+        - name: courseId
+          in: query
+          description: ID of the course to filter by
+          required: false
+          type: string
+        - name: moduleId
+          in: query
+          description: ID of the module to filter by
+          required: false
+          type: string
+        - name: chapterId
+          in: query
+          description: ID of the chapter to filter by
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved lessons list
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Got Lesson List Successfully
+              lessons:
+                type: array
+                items:
+                  $ref: '#/definitions/Lesson'
+        '400':
+          description: Invalid course/module/chapter ID provided
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Course/Module/Chapter doesn't exist
+        '500':
+          description: Internal server error
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Internal server error
+              error:
+                type: string
+                example: Error message
+# Remove Chapter
+  /api/v1/course/{courseId}/module/{moduleId}/chapter/{chapterId}:
+    delete:
+      tags:
+       - Chapter
+      summary: Remove Chapter
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the module
+        - in: path
+          name: chapterId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the chapter to be remove
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+# add chapter
+  /api/v1/course/{courseId}/module/{moduleId}/chapter/add:
+   post:
+    tags:
+      - Chapter
+    summary: add chapter
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: courseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the course
+      - in: path
+        name: moduleId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the module
+      - in: body
+        name: chapter
+        description: The chapter to add
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            status:
+              type: string
+          required:
+            - name
+            - url
+    responses:
+      200:
+        description: "Chapter added successfully"
+      400:
+        description: "Chapter name or URL already exists in the module"
+      500:
+        description: Internal server error
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Internal Server Error
+
+# edit chapter
+  /api/v1/course/{courseId}/module/{moduleId}/chapter/{chapterId}/edit:
+   put:
+    tags:
+      - Chapter
+    summary: edit chapter
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: courseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the course
+      - in: path
+        name: moduleId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the module
+      - in: path
+        name: chapterId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the chapter
+      - in: body
+        name: chapter
+        description: The chapter to edit
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            url:
+              type: string
+            status:
+              type: string
+    responses:
+      200:
+        description: "Chapter updated successfully"
+      500:
+        description: Internal server error
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Internal Server Error
+
+
+# Get All Chapters By CouseId and ModuleId
+  /api/v1/course/{courseId}/module/{moduleId}/chapters/all/:
+   get:
+      tags:
+       - Chapter
+      summary: Get All Chapters By ModuleId By CourseId
+      parameters:
+      - in: path
+        name: courseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the course to get chapter
+      - in: path
+        name: moduleId
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The ID of the module to get chapter
+      - in: query
+        name: search
+        description: "Search with name of the Chapter"
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Got All Chapters By ModuleId By CourseId
+        "500":
+          description: Internal server error 
+# Update chapter status
+  /api/v1/course/{courseId}/module/{moduleId}/chapter/{chapterId}/status:
+    patch:
+      tags:
+       - Chapter
+      summary: Update a chapter status by courseId, moduleId, chapterId
+      parameters:
+        - in: path
+          name: courseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the course
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the module
+        - in: path
+          name: chapterId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the chapter
+        - in: body
+          name: course
+          description: The module to update status ['Active', 'Inactive', 'Retired', 'Archive']
+          required: true
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                required: true
+      responses:
+        "200":
+          description: Chapter updated successfully
+        "404":
+          description: Course not found
+        "500":
+          description: Internal server error
+# Add Topic
+  /api/v1/topic/courses/{courseId}/modules/{moduleId}/chapters/{chapterId}/lessons/{lessonId}/topics:
+      post:
+        tags:
+          - Topic
+        summary: Add a new topic to a course module chapter lesson
+        description: Add a new topic with its content to a course module chapter lesson , type can be a string of['Image', 'Video', 'Text', 'Audio', 'VideoLink', 'AudioLink']
+        parameters:
+          - name: courseId
+            in: path
+            description: ID of the course the module belongs to
+            required: true
+            type: string
+          - name: moduleId
+            in: path
+            description: ID of the module the chapter belongs to
+            required: true
+            type: string
+          - name: chapterId
+            in: path
+            description: ID of the chapter the lesson belongs to
+            required: true
+            type: string
+          - name: lessonId
+            in: path
+            description: ID of the lesson the topic belongs to
+            required: true
+            type: string
+          - in: formData
+            name: name
+            type: string
+            required: true
+          - in: formData
+            name: url
+            type: string
+            required: true
+          - in: formData
+            name: order
+            type: number
+            required: true
+          - in: formData
+            name: contents
+            type: array
+            required: true
+            description: The list of content for the topic.
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  required: true
+            collectionFormat: multi
+          - in: formData
+            name: content
+            type: array
+            required: true
+            description: add file in order
+            items:
+              type: file
+            collectionFormat: multi
+          # - name: content
+          #   in: formData
+          #   description: add file in order
+          #   required: true
+          #   type: array
+          #   items:
+          #     type: file
+        responses:
+          '201':
+            description: Topic added successfully
+            schema:
+          '400':
+            description: Bad Request
+          '404':
+            description: Not Found
+          '500':
+            description: Internal Server Error
+        consumes:
+          - multipart/form-data
+        produces:
+          - application/json
+# Edit Topic
+  /api/v1/topic/{topicId}:
+      put:
+        tags:
+          - Topic
+        summary: Add a new topic to a course module chapter lesson
+        description: Add a new topic with its content to a course module chapter lesson
+        parameters:
+          - in: path
+            name: topicId
+            required: true
+            schema:
+              type: string
+              format: uuid
+            description: The ID of the topic
+          - in: formData
+            name: name
+            type: string
+          - in: formData
+            name: url
+            type: string
+          - in: formData
+            name: order
+            type: number
+          - in: formData
+            name: contents
+            type: array
+            description: The list of content for the topic.
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+            collectionFormat: multi
+          - in: formData
+            name: content
+            type: array
+            description: add file in order
+            items:
+              type: file
+            collectionFormat: multi
+        responses:
+          '201':
+            description: Topic updated successfully
+          '400':
+            description: Bad Request
+          '404':
+            description: Not Found
+          '500':
+            description: Internal Server Error
+        consumes:
+          - multipart/form-data
+        produces:
+          - application/json
+# Get All Topics
+  /api/v1/topic:
+      get:
+          tags:
+          - Topic
+          summary: Get All Topics
+          parameters:
+          - in: query
+            name: page
+            description: Page number of the results to retrieve
+            schema:
+              type: integer
+          - in: query
+            name: limit
+            description: Maximum number of results to retrieve per page
+            schema:
+              type: integer
+          - in: query
+            name: status
+            description: "'Active', 'Deleted', 'Inactive', 'Retired', 'Archive'"
+            schema:
+              type: string
+          - in: query
+            name: search
+            description: "Search with name of the topic"
+            schema:
+              type: string
+          responses:
+            "200":
+              description: Get All Topics
+            "500":
+              description: Internal server error
+# Get All Topics By Lesson Id
+  /api/v1/topic/lesson/{lessonId}:
+      get:
+          tags:
+          - Topic
+          summary: Get All Topics By Lesson Id
+          parameters:
+          - in: path
+            name: lessonId
+            required: true
+            schema:
+              type: string
+              format: uuid
+            description: The ID of the lesson
+          - in: query
+            name: page
+            description: Page number of the results to retrieve
+            schema:
+              type: integer
+          - in: query
+            name: limit
+            description: Maximum number of results to retrieve per page
+            schema:
+              type: integer
+          - in: query
+            name: status
+            description: "'Active', 'Deleted', 'Inactive', 'Retired', 'Archive'"
+            schema:
+              type: string
+          - in: query
+            name: search
+            description: "Search with name of the topic"
+            schema:
+              type: string
+          responses:
+            "200":
+              description: Get All Topics
+            "500":
+              description: Internal server error
+# Get All Topics By Lesson Id
+  /api/v1/topic/{topicId}/content/all:
+      get:
+          tags:
+          - Topic
+          summary: Get All Content By Topic Id
+          parameters:
+          - in: path
+            name: topicId
+            required: true
+            schema:
+              type: string
+              format: uuid
+            description: The ID of the topic
+          responses:
+            "200":
+              description: Get All Content by topicId
+            "500":
+              description: Internal server error
+# Remove Topic
+  /api/v1/topic/{topicId}/remove:
+    delete:
+      tags:
+       - Topic
+      summary: Remove Topic
+      parameters:
+        - in: path
+          name: topicId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the topic
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+
+# Add question
+  /api/v1/question/course/{courseId}/module/{moduleId}/chapter/{chapterId}/lesson/{lessonId}/add:
+   post:
+    tags:
+      - Question
+    summary: Add Question, Note = answerType can be ['SingleSelect', 'MultiSelect', 'Text']
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: courseId
+        required: true
+        schema:
+            type: string
+            format: uuid
+        description: The ID of the course
+      - in: path
+        name: moduleId
+        required: true
+        schema:
+            type: string
+            format: uuid
+        description: The ID of the module
+      - in: path
+        name: chapterId
+        required: true
+        schema:
+            type: string
+            format: uuid
+        description: The ID of the chapter
+      - in: path
+        name: lessonId
+        required: true
+        schema:
+            type: string
+            format: uuid
+        description: The ID of the Lesson
+      - in: body
+        name: question
+        description: The question to add 
+        required: true
+        schema:
+          type: object
+          properties:
+            type:
+              type: string
+            content:
+              type: string
+            instruction:
+              type: string
+            options:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  content:
+                    type: string
+                  instruction:
+                    type: string
+                  isCorrect:
+                    type: boolean
+                  isCorrect:
+              uniqueItems: true
+              minItems: 2
+              maxItems: 6
+            answerType:
+              type: string
+      
+    responses:
+      201:
+        description: "Question addded successfully"
+      400:
+        description: "Bad request"
+      500:
+        description: Internal server error
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Internal Server Error
+# Edit question
+  /api/v1/question/{questionId}:
+   put:
+    tags:
+      - Question
+    summary: Edit Question Note = answerType can be ['SingleSelect', 'MultiSelect', 'Text']
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: questionId
+        required: true
+        schema:
+            type: string
+            format: uuid
+        description: The ID of the question
+      - in: body
+        name: question
+        description: The question to edit-------NOTE - type can be a string of['Image', 'Video', 'Text', 'Audio'], and content can be file of['Image', 'Video', 'Text', 'Audio'] 
+        schema:
+          type: object
+          properties:
+            type:
+              type: string
+            content:
+              type: string
+            instruction:
+              type: string
+            options:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  content:
+                    type: string
+                  instruction:
+                    type: string
+                  isCorrect:
+                    type: boolean
+                  isCorrect:
+              uniqueItems: true
+              minItems: 2
+              maxItems: 6
+            answerType: string
+  
+      
+    responses:
+      200:
+        description: "Question Updated successfully"
+      400:
+        description: Bad request
+      500:
+        description: Internal server error
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Internal Server Error
+# Remove Question
+  /api/v1/question/{questionId}/remove:
+    delete:
+      tags:
+       - Question
+      summary: Remove Question
+      parameters:
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The ID of the Question
+      responses:
+        "200":
+          description: Deleted successfully
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+# Get All Questions By Lesson Id
+  /api/v1/question/lesson/{lessonId}/all:
+      get:
+          tags:
+          - Question
+          summary: Get All Questions by lessonId
+          parameters:
+          - in: path
+            name: lessonId
+            required: true
+            schema:
+                type: string
+                format: uuid
+            description: The ID of the Lesson
+          - in: query
+            name: page
+            description: Page number of the results to retrieve
+            schema:
+              type: integer
+          - in: query
+            name: limit
+            description: Maximum number of results to retrieve per page
+            schema:
+              type: integer
+          - in: query
+            name: status
+            description: "'Active', 'Deleted', 'Inactive', 'Retired', 'Archive'"
+            schema:
+              type: string
+          responses:
+            "200":
+              description: Get All Question By Lesson Id
+            "500":
+              description: Internal server error
